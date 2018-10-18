@@ -58,7 +58,7 @@ def pool_layer(name, input, ksize=None, strides=None):
     return pool
 
 
-def fc_layer(name, input, input_nodes, output_nodes):
+def fc_layer(name, input, input_nodes, output_nodes, regularizer=None):
     '''
     Args:
         input is a vector m,input nodes
@@ -76,10 +76,12 @@ def fc_layer(name, input, input_nodes, output_nodes):
                 initializer=tf.truncated_normal_initializer(stddev=.1)
             )
             z = tf.matmul(input, w) + b
+            if regularizer != None:
+                tf.add_to_collection("reg", regularizer(w))  # regularization
     return tf.nn.relu(z)
 
 
-def forward(input):
+def forward(input, train=None, regularizer=None, dropout_rate=DROPOUT_RATE):
     # conv layer and pool layer
     conv1 = conv_layer("conv1-layer", input, [CONV_1_HEIGHT, CONV_1_WIDTH, IMAGE_DEEP, CONV_1_DEEP])
     pool1 = pool_layer("pool1_layer", conv1)
@@ -91,20 +93,18 @@ def forward(input):
     input = tf.reshape(pool2, [-1, nodes])
 
     # fully connect layer
-    fc1 = fc_layer("fc1-layer", input, nodes, FC_NODE_1)
-    fc2 = fc_layer("fc2-layer", fc1, FC_NODE_1, FC_NODE_2)
+    fc1 = fc_layer("fc1-layer", input, nodes, FC_NODE_1, regularizer)
+    if train: fc1 = tf.nn.dropout(fc1, dropout_rate)  # dropout
+    fc2 = fc_layer("fc2-layer", fc1, FC_NODE_1, FC_NODE_2, regularizer)
+    if train: fc2 = tf.nn.dropout(fc2, dropout_rate)  # dropout
 
+    # softmax to predict probability
     return tf.nn.softmax(fc2)
 
 
 def main():
-    print("a")
-
-
-if __name__ == '__main__':
     import time
-
-    x = tf.constant(np.random.rand(40000, 28, 28, 1), tf.float32)  # fake test data
+    x = tf.constant(np.random.rand(20000, 28, 28, 1), tf.float32)  # fake test data
     y = forward(x)
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
@@ -112,3 +112,7 @@ if __name__ == '__main__':
         res = sess.run(y)
         tok = time.time()
         print(res.shape, tok - tic, 's')
+
+
+if __name__ == '__main__':
+    main()
