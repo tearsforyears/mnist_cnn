@@ -82,6 +82,12 @@ def fc_layer(name, input, input_nodes, output_nodes, regularizer=None):
 
 
 def forward(input, train=None, regularizer=None, dropout_rate=DROPOUT_RATE):
+    '''
+    Args:
+        input is a image set
+    Return:
+        the label in one hot encoding
+    '''
     # conv layer and pool layer
     conv1 = conv_layer("conv1-layer", input, [CONV_1_HEIGHT, CONV_1_WIDTH, IMAGE_DEEP, CONV_1_DEEP])
     pool1 = pool_layer("pool1_layer", conv1)
