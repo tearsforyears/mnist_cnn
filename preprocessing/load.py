@@ -1,19 +1,13 @@
 # coding=utf-8
 import os
 import struct
-# preprocessing
 import numpy as np
 import cv2
-
 # constant define
-DATA_RELATIVE_PATH = '../data'
-DATA_SET_SIZE = 60000  # mnist 数据集大小
-IMAGE_HEIGHT = 28
-IMAGE_WIDTH = 28
-RESULT_KIND = 10
+from settings import *
 
 
-def load_mnist(path=DATA_RELATIVE_PATH, kind='train'):
+def load_mnist(path=DATA_PATH, kind='train'):
     # the code in mnist sample to load origin data set
     """Load MNIST data from `path`"""
     labels_path = os.path.join(path,
@@ -40,8 +34,8 @@ def load_mnist(path=DATA_RELATIVE_PATH, kind='train'):
 def reformat(images, labels):
     # change x to m,h,w,c or NHWC
     # change y to one-hot encoding
-    x_ = images.reshape(DATA_SET_SIZE, IMAGE_HEIGHT, IMAGE_WIDTH)
-    y_ = np.eye(RESULT_KIND)[labels].T  # one-hot encoding
+    x_ = images.reshape(DATA_SET_SIZE, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEEP)
+    y_ = np.eye(RESULT_KIND)[labels]  # one-hot encoding
     return x_, y_
 
 
@@ -88,19 +82,19 @@ def load(images=None, labels=None):
     return x, y
 
 
-def get_batch_by_index(index=0, batch_size=64):
-    pass
+def get_batch_by_index(input, index=0, batch_size=64):
+    start = (index * batch_size) % DATA_SET_SIZE
+    end = min(start + batch_size, DATA_SET_SIZE)
+    return input[start:end]
 
 
-def get_label_one_hot(index):
-    pass
+def get_label_one_hot(output, begin, end):
+    return output[:, begin:end]
 
 
 if __name__ == '__main__':
     images, labels = load_mnist()
     # distribution(images, labels)
     x, y = load()
-    import time
-
-    time.sleep(500)
+    print(x.shape, y.shape)
     pass
