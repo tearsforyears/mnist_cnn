@@ -61,7 +61,8 @@ def pool_layer(name, input, ksize=None, strides=None):
 def fc_layer(name, input, input_nodes, output_nodes, regularizer=None):
     '''
     Args:
-        input is a vector m,input nodes
+        input: is a vector m,input nodes
+        regularizer: this is a regularizer of weight so can add it to a collection
     '''
     with tf.name_scope(name):
         with tf.variable_scope(name):
@@ -84,7 +85,8 @@ def fc_layer(name, input, input_nodes, output_nodes, regularizer=None):
 def forward_prop(input, train=None, regularizer=None, dropout_rate=DROPOUT_RATE):
     '''
     Args:
-        input is a image set
+        input: is a image set
+        regularizer: this is a regularizer of weight so can add it to a collection
     Return:
         the label in one hot encoding
     '''
