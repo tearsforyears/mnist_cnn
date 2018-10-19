@@ -2,12 +2,8 @@
 import tensorflow as tf
 import numpy as np
 from settings import *
-from .inference import forward_prop
-from preprocessing.load import load
-
-'''
-    forward_prop(input, train=None, regularizer=None, dropout_rate=DROPOUT_RATE)
-'''
+from model.inference import forward_prop
+from preprocessing.load import load, get_label, get_batch
 
 
 def get_Regularizer_Term(name='loss'):
@@ -54,9 +50,14 @@ def loss_function(y_, y):
     '''
     cross_entropy = -y_ * tf.log(tf.clip_by_value(y, 1e-8, 1.))
     loss = tf.reduce_mean(cross_entropy) + get_Regularizer_Term('loss')
+    return loss
 
 
-def train(data_input, data_labels):
+def save_model_as_ckpt(sess):
+    pass
+
+
+def backward_prop(data_input, data_labels):
     # train data interface
     x = tf.placeholder(name="input_x", dtype=tf.float32, shape=[None, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEEP])
     y_ = tf.placeholder(name="input_y", dtype=tf.float32, shape=[None, RESULT_KIND])
@@ -78,11 +79,23 @@ def train(data_input, data_labels):
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
         for i in range(STEPS):
-            start = (i * BATCH_SIZE) % DATA_SET_SIZE
-            end = min(start + BATCH_SIZE, DATA_SET_SIZE)
+            sess.run(
+                train,
+                feed_dict={
+                    x: get_batch(data_input, index=i),
+                    y_: get_label(data_labels, index=i)
+                }
+            )
+            sess.run(add_global)
+            if i % 2000 == 0:
+                c = sess.run(loss, feed_dict={x: get_batch(data_input, index=i), y_: get_label(data_labels, index=i)})
+                print("after training", i, "loss became", c)
+
+
 def main():
     images, labels = load()  # here the images is scaling and labels are one-hot encoding
     print(images.shape, labels.shape)
+    backward_prop(images, labels)
 
 
 if __name__ == '__main__':
