@@ -77,7 +77,7 @@ def fc_layer(name, input, input_nodes, output_nodes, regularizer=None):
             )
             z = tf.matmul(input, w) + b
             if regularizer != None:
-                tf.add_to_collection("reg", regularizer(w))  # regularization
+                tf.add_to_collection("loss", regularizer(w))  # regularization
     return tf.nn.relu(z)
 
 

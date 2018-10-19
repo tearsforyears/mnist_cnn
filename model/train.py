@@ -14,7 +14,7 @@ def train():
     x = tf.placeholder(name="input_x", dtype=tf.float32, shape=[None, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEEP])
     y_ = tf.placeholder(name="input_y", dtype=tf.float32, shape=[None, RESULT_KIND])
     # this is for train x and y
-    
+
 
 def main():
     x, y = load()
