@@ -81,7 +81,7 @@ def fc_layer(name, input, input_nodes, output_nodes, regularizer=None):
     return tf.nn.relu(z)
 
 
-def forward(input, train=None, regularizer=None, dropout_rate=DROPOUT_RATE):
+def forward_prop(input, train=None, regularizer=None, dropout_rate=DROPOUT_RATE):
     '''
     Args:
         input is a image set
@@ -111,7 +111,7 @@ def forward(input, train=None, regularizer=None, dropout_rate=DROPOUT_RATE):
 def main():
     import time
     x = tf.constant(np.random.rand(20000, 28, 28, 1), tf.float32)  # fake test data
-    y = forward(x)
+    y = forward_prop(x)
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
         tic = time.time()
