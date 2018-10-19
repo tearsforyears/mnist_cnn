@@ -82,19 +82,24 @@ def load(images=None, labels=None):
     return x, y
 
 
-def get_batch_by_index(input, index=0, batch_size=64):
-    start = (index * batch_size) % DATA_SET_SIZE
-    end = min(start + batch_size, DATA_SET_SIZE)
+def get_start_and_end(index):
+    start = (index * BATCH_SIZE) % DATA_SET_SIZE
+    end = min(start + BATCH_SIZE, DATA_SET_SIZE)
+    return start, end
+
+
+def get_batch(input, index=0):
+    start, end = get_start_and_end(index)
     return input[start:end]
 
 
-def get_label_one_hot(output, begin, end):
-    return output[:, begin:end]
+def get_label(label, index=0):
+    start, end = get_start_and_end(index)
+    return label[start:end]
 
 
 if __name__ == '__main__':
     images, labels = load_mnist()
     # distribution(images, labels)
     x, y = load()
-    print(x.shape, y.shape)
     pass
