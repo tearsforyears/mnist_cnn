@@ -5,11 +5,11 @@ import sys
 # append the project root to this file
 # BASE_DIR = os.getcwd() in this file
 
-BASE_DIR = r'F:\resourcefile\mnist_cnn'
+BASE_DIR = r'F:/resourcefile/mnist_cnn'
 sys.path.append(BASE_DIR)
 
 # about dataset
-DATA_PATH = BASE_DIR + r'\data'
+DATA_PATH = BASE_DIR + r'/data'
 DATA_SET_SIZE = 60000  # mnist 数据集大小
 IMAGE_HEIGHT = 28
 IMAGE_WIDTH = 28
@@ -38,5 +38,8 @@ STEPS = 30000
 DROPOUT_RATE = 0.5
 
 # about model and save
-MODEL_SAVE_PATH = r"/savedata/"
-MODEL_NAME = 'model.ckpt'
+MODEL_SAVE_PATH = BASE_DIR + r"/savedata/"
+MODEL_NAME = 'ckpt/mnist_cnn.ckpt'
+MAX_TO_KEEP = 3
+KEEP_CHECKPOINT_EVERY_N_HOURS = 1
+PB_NAME = r'pb/mnist_cnn.pb'

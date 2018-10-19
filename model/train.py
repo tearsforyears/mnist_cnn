@@ -4,6 +4,7 @@ import numpy as np
 from settings import *
 from model.inference import forward_prop
 from preprocessing.load import load, get_label, get_batch
+from tensorflow.python.framework import graph_util
 
 
 def get_Regularizer_Term(name='loss'):
@@ -53,8 +54,18 @@ def loss_function(y_, y):
     return loss
 
 
-def save_model_as_ckpt(sess):
-    pass
+def save_model(sess, global_step, type='ckpt', saver=None):
+    if type == 'ckpt':
+        # save as ckpt model
+        saver.save(sess, MODEL_SAVE_PATH + MODEL_NAME, global_step)
+    elif type == 'pb':
+        # save as pb model
+        graph_def = tf.get_default_graph().as_graph_def()
+        output_graph_def = graph_util.convert_variables_to_constants(sess, graph_def, ["output"])
+        with tf.gfile.GFile(MODEL_SAVE_PATH + PB_NAME, "wb") as f:
+            f.write(output_graph_def.SerializeToString())
+    else:
+        print("type error: do not save the model")
 
 
 def backward_prop(data_input, data_labels):
@@ -64,10 +75,10 @@ def backward_prop(data_input, data_labels):
 
     # regularizer and forward_prop
     regularizer = tf.contrib.layers.l2_regularizer(REG_RATE)
-    y = forward_prop(x, True, regularizer)
+    y = forward_prop(x, train=True, regularizer=regularizer)
 
     # training params: add_global learning_rate loss
-    global_step = tf.Variable(0, trainable=False)
+    global_step = tf.Variable(-1, trainable=False)
     add_global = global_step.assign_add(1)
     learning_rate = get_learning_rate(global_step)
     loss = loss_function(y_, y)
@@ -75,7 +86,11 @@ def backward_prop(data_input, data_labels):
     # optimizer the train (the core of the cnn)
     train = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 
-    # get start with training
+    # get start with training and save
+    saver = tf.train.Saver(
+        max_to_keep=MAX_TO_KEEP,
+        keep_checkpoint_every_n_hours=KEEP_CHECKPOINT_EVERY_N_HOURS,
+    )
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
         for i in range(STEPS):
@@ -88,8 +103,10 @@ def backward_prop(data_input, data_labels):
             )
             sess.run(add_global)
             if i % 2000 == 0:
-                c = sess.run(loss, feed_dict={x: get_batch(data_input, index=i), y_: get_label(data_labels, index=i)})
-                print("after training", i, "loss became", c)
+                c = sess.run(loss, feed_dict={x: get_batch(data_input, i), y_: get_label(data_labels, i)})
+                print("after training", i, "current loss become", c)
+                save_model(sess, global_step, 'ckpt', saver)
+                # save_model(sess, global_step, 'pb')
 
 
 def main():

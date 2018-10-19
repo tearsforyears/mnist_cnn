@@ -107,7 +107,7 @@ def forward_prop(input, train=None, regularizer=None, dropout_rate=DROPOUT_RATE)
     if train: fc2 = tf.nn.dropout(fc2, dropout_rate)  # dropout
 
     # softmax to predict probability
-    return tf.nn.softmax(fc2)
+    return tf.nn.softmax(fc2, name='output')
 
 
 def main():
