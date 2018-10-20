@@ -2,9 +2,21 @@
 import os
 import sys
 
+__ver__ = 0.1
+__github__ = "tearsforyears"
+
+'''
+Note:
+    this is the neural networks parameters settings
+    the neural networks do not use for loop to generate
+    so if you want to change your neural networks construct
+    please use api conv_layer and fc_layer to rebuild
+    
+    ### do not change the construct of the neural net work!
+'''
+
 # append the project root to this file
 # BASE_DIR = os.getcwd() in this file
-
 BASE_DIR = r'F:/resourcefile/mnist_cnn'
 sys.path.append(BASE_DIR)
 
@@ -39,7 +51,7 @@ DROPOUT_RATE = 0.5
 
 # about model and save
 MODEL_SAVE_PATH = BASE_DIR + r"/savedata/"
-MODEL_NAME = 'ckpt/mnist_cnn.ckpt'
+MODEL_NAME = 'mnist_cnn.ckpt'
 MAX_TO_KEEP = 3
 KEEP_CHECKPOINT_EVERY_N_HOURS = 1
-PB_NAME = r'pb/mnist_cnn.pb'
+PB_NAME = r'mnist_cnn.pb'

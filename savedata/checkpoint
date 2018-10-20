@@ -1,0 +1,4 @@
+model_checkpoint_path: "F:/resourcefile/mnist_cnn/savedata/mnist_cnn.ckpt-28001"
+all_model_checkpoint_paths: "F:/resourcefile/mnist_cnn/savedata/mnist_cnn.ckpt-24001"
+all_model_checkpoint_paths: "F:/resourcefile/mnist_cnn/savedata/mnist_cnn.ckpt-26001"
+all_model_checkpoint_paths: "F:/resourcefile/mnist_cnn/savedata/mnist_cnn.ckpt-28001"

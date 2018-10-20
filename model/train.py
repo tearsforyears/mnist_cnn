@@ -65,7 +65,15 @@ def save_model(sess, global_step, type='ckpt', saver=None):
         with tf.gfile.GFile(MODEL_SAVE_PATH + PB_NAME, "wb") as f:
             f.write(output_graph_def.SerializeToString())
     else:
-        print("type error: do not save the model")
+        print("type error: do not save the model")  # use log is better
+
+
+def rebuild_by_ckpt(sess, saver):
+    ckpt = tf.train.get_checkpoint_state(MODEL_SAVE_PATH)
+    if ckpt and ckpt.model_checkpoint_path:
+        saver.restore(sess, ckpt.model_checkpoint_path)
+    else:
+        print("first train of this model")
 
 
 def backward_prop(data_input, data_labels):
@@ -91,9 +99,11 @@ def backward_prop(data_input, data_labels):
         max_to_keep=MAX_TO_KEEP,
         keep_checkpoint_every_n_hours=KEEP_CHECKPOINT_EVERY_N_HOURS,
     )
+
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
-        for i in range(STEPS):
+        rebuild_by_ckpt(sess, saver)  # break point
+        for i in range(sess.run(global_step), STEPS):
             sess.run(
                 train,
                 feed_dict={
@@ -106,7 +116,7 @@ def backward_prop(data_input, data_labels):
                 c = sess.run(loss, feed_dict={x: get_batch(data_input, i), y_: get_label(data_labels, i)})
                 print("after training", i, "current loss become", c)
                 save_model(sess, global_step, 'ckpt', saver)
-                # save_model(sess, global_step, 'pb')
+                save_model(sess, global_step, 'pb')
 
 
 def main():
