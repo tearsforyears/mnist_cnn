@@ -1,9 +1,16 @@
 # coding=utf-8
 from preprocessing.load import load
+from preprocessing.tensorboard_tools import variable_summaries
 import tensorflow as tf
 from functools import reduce
 from settings import *  # constant define
 import numpy as np
+
+'''
+i use a lot of variable_summaries for test
+in fact do not analysis all the variable
+but only the activation 
+'''
 
 
 def conv_layer(name, input, filter_shape, stride=None):
@@ -20,18 +27,23 @@ def conv_layer(name, input, filter_shape, stride=None):
         with tf.variable_scope(name):
             if stride == None:
                 stride = [1, 1, 1, 1]
-            conv_w = tf.get_variable(
-                name='conv_w',
-                shape=filter_shape,
-                initializer=tf.truncated_normal_initializer(stddev=.1)
-            )
+            with tf.name_scope('w'):
+                conv_w = tf.get_variable(
+                    name='conv_w',
+                    shape=filter_shape,
+                    initializer=tf.truncated_normal_initializer(stddev=.1)
+                )
+                variable_summaries(conv_w)
             conv = tf.nn.conv2d(input, conv_w, stride, padding='SAME')
-            conv_b = tf.get_variable(
-                name='conv_b',
-                shape=[filter_shape[-1]],
-                initializer=tf.constant_initializer(.1)
-            )
+            with tf.name_scope('b'):
+                conv_b = tf.get_variable(
+                    name='conv_b',
+                    shape=[filter_shape[-1]],
+                    initializer=tf.constant_initializer(.1)
+                )
+                variable_summaries(conv_b)
             relu = tf.nn.relu(tf.nn.bias_add(conv, conv_b))
+            variable_summaries(relu)  # this is not a value
     return relu
 
 
@@ -55,6 +67,7 @@ def pool_layer(name, input, ksize=None, strides=None):
                                   ksize=ksize,
                                   strides=strides,
                                   padding="SAME")
+            variable_summaries(pool)
     return pool
 
 
@@ -66,17 +79,22 @@ def fc_layer(name, input, input_nodes, output_nodes, regularizer=None):
     '''
     with tf.name_scope(name):
         with tf.variable_scope(name):
-            w = tf.get_variable(
-                name="w",
-                shape=[input_nodes, output_nodes],
-                initializer=tf.truncated_normal_initializer(stddev=.1)
-            )
-            b = tf.get_variable(
-                name="b",
-                shape=[1, output_nodes],
-                initializer=tf.truncated_normal_initializer(stddev=.1)
-            )
+            with tf.name_scope("w"):
+                w = tf.get_variable(
+                    name="w",
+                    shape=[input_nodes, output_nodes],
+                    initializer=tf.truncated_normal_initializer(stddev=.1)
+                )
+                variable_summaries(w)
+            with tf.name_scope("b"):
+                b = tf.get_variable(
+                    name="b",
+                    shape=[1, output_nodes],
+                    initializer=tf.truncated_normal_initializer(stddev=.1)
+                )
+                variable_summaries(b)
             z = tf.matmul(input, w) + b
+            tf.summary.histogram('activations', z)
             if regularizer != None:
                 tf.add_to_collection("loss", regularizer(w))  # regularization
     return tf.nn.relu(z)
@@ -107,7 +125,8 @@ def forward_prop(input, train=None, regularizer=None, dropout_rate=DROPOUT_RATE)
     if train: fc2 = tf.nn.dropout(fc2, dropout_rate)  # dropout
 
     # softmax to predict probability
-    return tf.nn.softmax(fc2, name='output')
+    with tf.name_scope("softmax"):
+        return tf.nn.softmax(fc2, name='output')
 
 
 def main():

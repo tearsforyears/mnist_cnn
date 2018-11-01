@@ -2,7 +2,7 @@
 import os
 import sys
 
-__ver__ = 0.1
+__ver__ = 0.2
 __github__ = "tearsforyears"
 
 '''
@@ -46,7 +46,7 @@ LEARNING_RATE = 0.001
 LEARNING_RATE_DECAY = 0.95
 DECAY_STEPS = 500
 REG_RATE = 0.001
-STEPS = 50000
+STEPS = 30000
 DROPOUT_RATE = 0.5
 MOVING_AVERAGE_DECAY = 0.99
 
@@ -56,3 +56,6 @@ MODEL_NAME = 'mnist_cnn.ckpt'
 MAX_TO_KEEP = 3
 KEEP_CHECKPOINT_EVERY_N_HOURS = 1
 PB_NAME = r'mnist_cnn.pb'
+
+# tensorboard analysis
+SUMMARY_DATA_PATH = BASE_DIR +r'/savedata/tensorboard/'

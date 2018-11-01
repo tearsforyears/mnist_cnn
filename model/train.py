@@ -33,8 +33,10 @@ def get_learning_rate(global_step, decay=True):
             decay_rate=LEARNING_RATE_DECAY,
             staircase=False
         )
+        tf.summary.scalar('learning_rate', a)
         return a
     else:
+        tf.summary.scalar('learning_rate', LEARNING_RATE)
         return LEARNING_RATE
 
 
@@ -49,9 +51,11 @@ def loss_function(y_, y):
         use cross_entropy to measure the loss
         of implement MLE or other functions here
     '''
-    cross_entropy = -y_ * tf.log(tf.clip_by_value(y, 1e-8, 1.))
-    loss = tf.reduce_mean(cross_entropy) + get_Regularizer_Term('loss')
-    return loss
+    with tf.name_scope("loss_function"):
+        cross_entropy = -y_ * tf.log(tf.clip_by_value(y, 1e-8, 1.))
+        loss = tf.reduce_mean(cross_entropy) + get_Regularizer_Term('loss')
+        tf.summary.scalar('cross_entropy', loss)
+        return loss
 
 
 def variable_average(global_step):
@@ -79,7 +83,7 @@ def save_model(sess, global_step, type='ckpt', saver=None):
     elif type == 'pb':
         # save as pb model
         graph_def = tf.get_default_graph().as_graph_def()
-        output_graph_def = graph_util.convert_variables_to_constants(sess, graph_def, ["output"])
+        output_graph_def = graph_util.convert_variables_to_constants(sess, graph_def, ["softmax/output"])
         with tf.gfile.GFile(MODEL_SAVE_PATH + PB_NAME, "wb") as f:
             f.write(output_graph_def.SerializeToString())
     else:
@@ -131,25 +135,35 @@ def backward_prop(data_input, data_labels):
     loss = loss_function(y_, y)
 
     # optimizer the train (the core of the cnn)
-    optimize_op = tf.train.AdamOptimizer(learning_rate).minimize(loss)
-    train_op = tf.group(optimize_op, average_op)  # group this two operation to one
+    with tf.name_scope("train"):
+        optimize_op = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+        train_op = tf.group(optimize_op, average_op)  # group this two operation to one
 
     # get start with training and save
     saver = tf.train.Saver(
         max_to_keep=MAX_TO_KEEP,
         keep_checkpoint_every_n_hours=KEEP_CHECKPOINT_EVERY_N_HOURS,
     )
+
+    # merged summary
+    merged = tf.summary.merge_all()
+
     with tf.Session() as sess:
+
+        train_writer = tf.summary.FileWriter(SUMMARY_DATA_PATH, sess.graph)
         tf.global_variables_initializer().run()
         rebuild_by_ckpt(sess, saver)  # break point
+
         for i in range(sess.run(global_step), STEPS):
-            sess.run(
-                train_op,
+            _, summary = sess.run(
+                [train_op, merged],
                 feed_dict={
                     x: get_batch(data_input, index=i),
                     y_: get_label(data_labels, index=i)
                 }
             )
+            if i % 20 == 0:
+                train_writer.add_summary(summary, i)
             sess.run(add_global)
             if i % 2000 == 0:
                 c = sess.run(loss, feed_dict={x: get_batch(data_input, i), y_: get_label(data_labels, i)})

@@ -65,12 +65,16 @@ def accuracy(input_x, input_y):
 
 
 def main():
+    import time
     x, y = load()
     n = 30000
-    # result = predict(x[:n], False)
-    # print(result)
-    res = accuracy(x[n:], y[n:])
-    print(res)
+    tic = time.time()
+    result = predict(x[:n], False)
+    tok = time.time()
+    print(result)
+    print((tok - tic) / n, 's/per')
+    # res = accuracy(x[n:], y[n:])
+    # print(res)
 
 
 if __name__ == '__main__':
