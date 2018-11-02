@@ -31,10 +31,13 @@ def load_mnist(path=DATA_PATH, kind='train'):
     return images, labels
 
 
-def reformat(images, labels):
+def reformat(images, labels, batch_size=None):
     # change x to m,h,w,c or NHWC
     # change y to one-hot encoding
-    x_ = images.reshape(DATA_SET_SIZE, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEEP)
+    if batch_size == None:
+        x_ = images.reshape(DATA_SET_SIZE, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEEP)
+    else:
+        x_ = images.reshape(batch_size, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEEP)
     y_ = np.eye(RESULT_KIND)[labels]  # one-hot encoding
     return x_, y_
 
@@ -78,6 +81,14 @@ def load(images=None, labels=None):
     if not (images and labels):
         images, labels = load_mnist()
     x, y = reformat(images, labels)
+    x = normalize(x)
+    return x, y
+
+
+def load_validate(images=None, labels=None):
+    if not (images and labels):
+        images, labels = load_mnist(kind='t10k')
+    x, y = reformat(images, labels, 10000)
     x = normalize(x)
     return x, y
 

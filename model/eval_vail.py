@@ -3,7 +3,7 @@ import tensorflow as tf
 import numpy as np
 from settings import *
 from model.inference import forward_prop
-from preprocessing.load import load
+from preprocessing.load import load, load_validate
 
 
 def rebuild_by_ckpt(sess, saver):
@@ -49,7 +49,7 @@ def accuracy(input_x, input_y):
          input_x: the data x to predict y
     """
     x = tf.placeholder(dtype=tf.float32, shape=[None, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_DEEP])
-    y_ = tf.placeholder(name="input_y", dtype=tf.float32, shape=[None, RESULT_KIND])
+    y_ = tf.placeholder(dtype=tf.float32, shape=[None, RESULT_KIND])
     y = forward_prop(x)
     saver = tf.train.Saver()
 
@@ -66,15 +66,13 @@ def accuracy(input_x, input_y):
 
 def main():
     import time
-    x, y = load()
-    n = 30000
+    x, y = load_validate()
+    print(x.shape, y.shape)
     tic = time.time()
-    result = predict(x[:n], False)
+    result = accuracy(x, y)
     tok = time.time()
     print(result)
-    print((tok - tic) / n, 's/per')
-    # res = accuracy(x[n:], y[n:])
-    # print(res)
+    print((tok - tic), 's')
 
 
 if __name__ == '__main__':
